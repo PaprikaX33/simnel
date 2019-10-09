@@ -15,6 +15,7 @@ int main(int argc, char**argv)
   for(int i = 0; i < argc; i++) {
     printf("%d, %s\n", i, argv[i]);
   }
+  printf("Listening on port 8000, from all IP. Max text is 99 chars\n");
   int const listenSocket = listen_socket_gen("8000");
   if(listenSocket < 0){
     perror("Error on socket generation\n");
@@ -30,7 +31,7 @@ int main(int argc, char**argv)
     perror("Error on Reading message");
   }
   buffer[len] = '\0';
-  printf("Message is %s\n", buffer);
+  printf("Message is\n%s\n", buffer);
   ssize_t const sended = send(con, buffer, (size_t)len, 0);
   if(sended < 0){
     perror("Error on send echo");
