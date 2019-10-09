@@ -1,18 +1,38 @@
 # Simnel
 
-A simple TCP tunneling server-client pair written in pure C
+Simnel (Simple Tunnel) is A simple TCP tunneling server-client pair written in pure C
 
 The first iteration will be very simple, therefore it will not use a strong encryption method, rather than a simple XOR to 8bit keys determined with diffie helman handshake on connetion
 
 ## Overview
 
-### Server
-
-The server is a program that listen from connection from simnel client, and once connected, it will try to initiate a diffie helman handshake, and then try to connect to the determined public server
-
 ### Client
 
-The client is a program that wait for incoming conection in a TCP socket, and create a new connection to simnel server for every incoming connection, it will wait for a diffie helman handshake. Once connected, the client will act as a normal public server
+Client opens a listening port, and waits for connection **from** external program, and rely it to the server
+
+#### Steps:
+
+1. Client waits for incoming connect
+1. Client connects the server
+1. Verification handshake
+1. Exchanging key with Diffie Helman
+1. Client encrypts and decrypts the communication until one of them disconnected
+
+### Server
+
+Server opens a listening port, and waits for connection from client, and opens a connection **to** the external program.
+
+#### Steps:
+
+1. Server waits for incoming connection from client
+1. Server connects to the external program
+1. Verification handshake
+1. Exchanging key with Diffie Helman
+1. Server encrypt and deencrypt the communication until one of them disconnected
+
+### Note
+
+External program is either a TCP server that listens from incoming connection such as web server, IRC server, etc. Or a TCP client progam such as Browser, IRC client, etc.
 
 ### Other
 
@@ -21,4 +41,4 @@ The intent is having a simnel client program that waits for incoming connection 
 The simnel client and simnel server are responsible to encrypt it with the key
 
 ## License
-This project is licensed with WTFPL
+This project is licensed with MIT License
