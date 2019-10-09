@@ -1,3 +1,6 @@
+# initial specific
+dsimnel
+
 ##GITHUB
 # Prerequisites
 *.d
@@ -78,7 +81,7 @@ tags
 .DS_Store
 .directory
 *.debug
-Makefile*
+#Makefile*
 *.prl
 *.app
 moc_*.cpp
