@@ -7,13 +7,16 @@ OUT_NAME = dsimnel
 
 all : $(OUT_NAME)
 
-$(OUT_NAME) : main.o
+$(OUT_NAME) : main.o socket.o
 	$(CC) -o $@ $^ $(COMPILE_FLAGS) $(LINK_FLAGS)
 
-main.o : main.c
+main.o : main.c socket.h
+	$(CC) -c -o $@ $< $(COMPILE_FLAGS)
+
+socket.o : socket.c socket.h
 	$(CC) -c -o $@ $< $(COMPILE_FLAGS)
 
 .PHONY : clean
 
 clean :
-	rm -f $(OUT_NAME) main.o
+	rm -f $(OUT_NAME) main.o socket.o
