@@ -10,11 +10,11 @@ all : $(OUT_NAME)
 $(OUT_NAME) : main.o socket.o
 	$(CC) -o $@ $^ $(COMPILE_FLAGS) $(LINK_FLAGS)
 
-main.o : main.c socket.h
-	$(CC) -c -o $@ $< $(COMPILE_FLAGS)
+main.o : main.c include/socket.h
+	$(CC) -c -o $@ -Iinclude $< $(COMPILE_FLAGS)
 
-socket.o : socket.c socket.h
-	$(CC) -c -o $@ $< $(COMPILE_FLAGS)
+socket.o : socket.c include/socket.h
+	$(CC) -c -o $@ -Iinclude $< $(COMPILE_FLAGS)
 
 .PHONY : clean
 
