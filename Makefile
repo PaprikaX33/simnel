@@ -1,4 +1,5 @@
 CC = clang
+C_STANDARD = -std=c11
 COMPILE_FLAGS = -Werror -g -Og -Wall -Wextra -Wshadow -Wcast-align -Wunused -Wpedantic -Wconversion -Wsign-conversion -Wnull-dereference -Wdouble-promotion -Wformat=2 
 
 LINK_FLAGS = -lpthread
