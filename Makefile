@@ -1,4 +1,5 @@
 CC = clang
+C_STANDARD = -std=c11
 COMPILE_FLAGS = -Werror -g -Og -Wall -Wextra -Wshadow -Wcast-align -Wunused -Wpedantic -Wconversion -Wsign-conversion -Wnull-dereference -Wdouble-promotion -Wformat=2 
 
 LINK_FLAGS = -lpthread
@@ -10,11 +11,11 @@ all : $(OUT_NAME)
 $(OUT_NAME) : main.o socket.o
 	$(CC) -o $@ $^ $(COMPILE_FLAGS) $(LINK_FLAGS)
 
-main.o : main.c socket.h
-	$(CC) -c -o $@ $< $(COMPILE_FLAGS)
+main.o : main.c include/socket.h
+	$(CC) -c -o $@ -Iinclude $< $(COMPILE_FLAGS)
 
-socket.o : socket.c socket.h
-	$(CC) -c -o $@ $< $(COMPILE_FLAGS)
+socket.o : socket.c include/socket.h
+	$(CC) -c -o $@ -Iinclude $< $(COMPILE_FLAGS)
 
 .PHONY : clean
 

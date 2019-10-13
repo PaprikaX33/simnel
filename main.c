@@ -1,4 +1,8 @@
 #include <stdio.h>
+#include <stdbool.h>
+//BEGIN EPOLL
+#include <sys/epoll.h>
+//END EPOLL
 //BEGIN OPEN LISTENING SOCKET
 #include <sys/socket.h>
 #include <unistd.h>
@@ -6,14 +10,17 @@
 //END OPEN LISTENING SOCKET
 #include "socket.h"
 
+int main_loop(int const incFd);
+
+#define PORT "8000"
+
 int main(int argc, char**argv)
 {
-  char buffer[100];
   for(int i = 0; i < argc; i++) {
     printf("%d, %s\n", i, argv[i]);
   }
-  printf("Listening on port 9000, from all IP. Max text is 99 chars\n");
-  int const listenSocket = listen_socket_gen("9000");
+  printf("Listening on port %s, from all IP. Max text is 99 chars\n", PORT);
+  int const listenSocket = listen_socket_gen(PORT);
   if(listenSocket < 0){
     perror("Error on socket generation\n");
     return -1;
@@ -24,35 +31,85 @@ int main(int argc, char**argv)
     perror("Error on accepting connection");
     return -1;
   }
-  ssize_t const len = recv(con, buffer, 100, 0);
-  if(con < 0){
-    perror("Error on Reading message");
+
+  int const loop = main_loop(con);
+  if(loop < 0){
+    fprintf(stderr, "Something is failed\n");
     return -1;
   }
-  buffer[len] = '\0';
-  printf("Message is\n%s\n", buffer);
-  ssize_t const sended = send(con, buffer, (size_t)len, 0);
-  if(sended < 0){
-    perror("Error on send echo");
-  }
-  if(sended != len) {
-    fprintf(stderr, "incorrect sended data. expected %zd, sended %zd\n", len, sended);
-  }
   close(con);
+  return 0;
+}
+
+
+int main_loop(int const incFd)
+{
+  struct epoll_event event;
+
+  int const epollFd = epoll_create(1);
+  if (epollFd < 0) {
+    perror("Error creating epoll object");
+    return -1;
+  }
+
+  event.events = EPOLLIN;
+  event.data.fd = incFd;
+  if(epoll_ctl(epollFd, EPOLL_CTL_ADD, incFd, &event)){
+    perror("Error adding listening socket to epoll");
+    close(epollFd);
+    return -1;
+  }
+
   //OPENING THE OTHER END
-  int const target = send_socket_gen("localhost", "8000");
-  if(target < 0){
-    perror("Error on accepting connection");
+  int const targetFd = send_socket_gen("www.duckduckgo.com", "80");
+  if(targetFd < 0){
+    perror("Error on creating connection");
+    close(epollFd);
     return -1;
   }
   printf("connected to the target\n");
-  ssize_t const sended_target = send(target, buffer, (size_t)len, 0);
-  if(sended_target < 0){
-    perror("Error on send echo");
+
+
+  event.events = EPOLLIN;
+  event.data.fd = targetFd;
+  if(epoll_ctl(epollFd, EPOLL_CTL_ADD, targetFd, &event)){
+    perror("Error adding target socket to epoll");
+    close(epollFd);
+    return -1;
   }
-  if(sended_target != len) {
-    fprintf(stderr, "incorrect sended data. expected %zd, sended %zd\n", len, sended_target);
+
+  while(true) {
+    char buffer[100];
+    if(epoll_wait(epollFd, &event, 1, -1) == 0){
+      printf("Timeout exceeded. Begin cleaning up\n");
+      break;
+    }
+    int const connection = event.data.fd;
+    ssize_t const len = recv(connection, buffer, 100, 0);
+    if(len < 0){
+      perror("Error on Reading message");
+      return -1;
+    }
+    if(len == 0) {
+      printf("Disconnection from %d\n", connection);
+      break;
+    }
+    buffer[len] = '\0';
+
+    int const bypassFd = (connection == incFd) ? targetFd : incFd;
+    unsigned int const color = (connection == incFd) ? 32 : 33;
+    printf("\x1b[%um%s\x1b[0m", color, buffer);
+
+    ssize_t const sended = send(bypassFd, buffer, (size_t)len, 0);
+    if(sended < 0){
+      perror("Error on send message");
+    }
+    if(sended != len) {
+      fprintf(stderr, "incorrect sended data. expected %zd, sended %zd\n", len, sended);
+    }
   }
-  close(target);
+
+  close(targetFd);
+  close(epollFd);
   return 0;
 }
