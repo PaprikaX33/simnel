@@ -12,13 +12,15 @@
 
 int main_loop(int const incFd);
 
+#define PORT "8000"
+
 int main(int argc, char**argv)
 {
   for(int i = 0; i < argc; i++) {
     printf("%d, %s\n", i, argv[i]);
   }
-  printf("Listening on port 9000, from all IP. Max text is 99 chars\n");
-  int const listenSocket = listen_socket_gen("9000");
+  printf("Listening on port %s, from all IP. Max text is 99 chars\n", PORT);
+  int const listenSocket = listen_socket_gen(PORT);
   if(listenSocket < 0){
     perror("Error on socket generation\n");
     return -1;
@@ -58,9 +60,8 @@ int main_loop(int const incFd)
     return -1;
   }
 
-
   //OPENING THE OTHER END
-  int const targetFd = send_socket_gen("localhost", "8000");
+  int const targetFd = send_socket_gen("www.duckduckgo.com", "80");
   if(targetFd < 0){
     perror("Error on creating connection");
     close(epollFd);
@@ -77,12 +78,10 @@ int main_loop(int const incFd)
     return -1;
   }
 
-  //bool alive = true;
   while(true) {
     char buffer[100];
     if(epoll_wait(epollFd, &event, 1, -1) == 0){
       printf("Timeout exceeded. Begin cleaning up\n");
-      //alive = false;
       break;
     }
     int const connection = event.data.fd;
@@ -96,9 +95,11 @@ int main_loop(int const incFd)
       break;
     }
     buffer[len] = '\0';
-    printf("Message from %d is\n%s\n", connection,  buffer);
 
     int const bypassFd = (connection == incFd) ? targetFd : incFd;
+    unsigned int const color = (connection == incFd) ? 32 : 33;
+    printf("\x1b[%um%s\x1b[0m", color, buffer);
+
     ssize_t const sended = send(bypassFd, buffer, (size_t)len, 0);
     if(sended < 0){
       perror("Error on send message");
@@ -106,7 +107,6 @@ int main_loop(int const incFd)
     if(sended != len) {
       fprintf(stderr, "incorrect sended data. expected %zd, sended %zd\n", len, sended);
     }
-    //alive = false;
   }
 
   close(targetFd);
