@@ -98,19 +98,13 @@ int main_loop(int const incFd)
     buffer[len] = '\0';
     printf("Message from %d is\n%s\n", connection,  buffer);
 
-    ssize_t const sendedTr = send(targetFd, buffer, (size_t)len, 0);
-    if(sendedTr < 0){
+    int const bypassFd = (connection == incFd) ? targetFd : incFd;
+    ssize_t const sended = send(bypassFd, buffer, (size_t)len, 0);
+    if(sended < 0){
       perror("Error on send message");
     }
-    if(sendedTr != len) {
-      fprintf(stderr, "incorrect sended data. expected %zd, sended %zd\n", len, sendedTr);
-    }
-    ssize_t const sendedIn = send(incFd, buffer, (size_t)len, 0);
-    if(sendedIn < 0){
-      perror("Error on send message");
-    }
-    if(sendedIn != len) {
-      fprintf(stderr, "incorrect sended data. expected %zd, sended %zd\n", len, sendedIn);
+    if(sended != len) {
+      fprintf(stderr, "incorrect sended data. expected %zd, sended %zd\n", len, sended);
     }
     //alive = false;
   }
