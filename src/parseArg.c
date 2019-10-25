@@ -5,8 +5,11 @@
 
 static void init_parse_arg(void);
 static int is_able(void);
+static int parse_flag(char const *);
 static void print_help(void);
 static void print_invalid(void);
+static void print_version(void);
+static void print_unrecog(char const *);
 static char const * snip_dir(char const *);
 
 static char const * prnam;
@@ -18,9 +21,11 @@ int parse_argc(int argc, char ** argv)
   init_parse_arg();
   prnam = snip_dir(argv[0]);
   for(int i = 1; i < argc; i++) {
-    if(!strncmp(argv[i], "-?", strlen("-?")) || !strncmp(argv[i], "--help", strlen("--help"))){
-      print_help();
-      return 1;
+    if(*(argv[i]) == '-'){
+      int const flg_res = parse_flag(argv[i]);
+      if(flg_res){
+        return flg_res;
+      }
     }
   }
   if(is_able()){
@@ -28,6 +33,20 @@ int parse_argc(int argc, char ** argv)
     return -1;
   }
   return 0;
+}
+
+int parse_flag(char const * flg)
+{
+  if(!strncmp(flg, "-?", strlen("-?")) || !strncmp(flg, "--help", strlen("--help"))){
+    print_help();
+    return 1;
+  }
+  if(!strncmp(flg, "-V", strlen("-V")) || !strncmp(flg, "--version", strlen("--version"))){
+    print_version();
+    return 1;
+  }
+  print_unrecog(flg);
+  return -1;
 }
 
 char const * snip_dir(char const * in)
@@ -73,6 +92,14 @@ int is_able(void)
   return 0;
 }
 
+void print_version(void)
+{
+  printf("%s v%d.%d.%d\n"
+         "simnel suite, a TCP tunnling suite.\n\n"
+         "There is NO WARRANTY, to the extent permitted by law.\n"
+         , prnam, VER_MAJOR, VER_MINOR, VER_PATCH);
+}
+
 void print_invalid(void)
 {
   fprintf(stderr,
@@ -81,9 +108,17 @@ void print_invalid(void)
           prnam, prnam, prnam);
 }
 
+void print_unrecog(char const * flg)
+{
+  fprintf(stderr,
+          "%s: Unknown flag \"%s\"\n"
+          "%s: Try \'%s --help\' for more information\n",
+          prnam, flg, prnam, prnam);
+}
+
 void print_help(void)
 {
   printf("Usage: %s [OPTION] <SOURCE ADDR>:<SOURCE PORT> <DEST ADDR>:<DEST PORT>\n", prnam);
-  printf(".\n");
+  printf("Open a listening connection on the SOURCE, and forward the data stream to DEST.\n\n");
   //printf("");
 }
