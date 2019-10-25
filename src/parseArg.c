@@ -5,25 +5,42 @@
 
 static void init_parse_arg(void);
 static int is_able(void);
+static void print_help(void);
+static void print_invalid(void);
+static char const * snip_dir(char const *);
+
+static char const * prnam;
+
 static struct ArgStruct args;
-
-/* static struct ArgsExtraFlag */
-/* { */
-
-/* }; */
 
 int parse_argc(int argc, char ** argv)
 {
   init_parse_arg();
-  for(int i = 0; i < argc; i++) {
+  prnam = snip_dir(argv[0]);
+  for(int i = 1; i < argc; i++) {
     if(!strncmp(argv[i], "-?", strlen("-?")) || !strncmp(argv[i], "--help", strlen("--help"))){
-      printf("WOW\n");
+      print_help();
       return 1;
     }
   }
-  return is_able();
+  if(is_able()){
+    print_invalid();
+    return -1;
+  }
+  return 0;
 }
 
+char const * snip_dir(char const * in)
+{
+  char const * found = in;
+  while(*in != '\0'){
+    if(*in == '/'){
+      found = in+1;
+    }
+    in++;
+  }
+  return found;
+}
 
 void init_parse_arg(void)
 {
@@ -54,4 +71,19 @@ int is_able(void)
     return -1;
   }
   return 0;
+}
+
+void print_invalid(void)
+{
+  fprintf(stderr,
+          "%s: Incomplete information given!!\n"
+          "%s: Try \'%s --help\' for more information\n",
+          prnam, prnam, prnam);
+}
+
+void print_help(void)
+{
+  printf("Usage: %s [OPTION] <SOURCE ADDR>:<SOURCE PORT> <DEST ADDR>:<DEST PORT>\n", prnam);
+  printf(".\n");
+  //printf("");
 }

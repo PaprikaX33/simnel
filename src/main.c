@@ -16,15 +16,8 @@ int main_loop(int const incFd);
 int main(int argc, char**argv)
 {
   int const parse_res = parse_argc(argc, argv);
-  if(parse_res > 0){
-    return 0;
-  }
-  if(parse_res < 0){
-    fprintf(stderr,
-            "%s: Incomplete information given!!\n"
-            "%s: Try \'%s --help\' for more information\n",
-            argv[0], argv[0], argv[0]);
-    return -1;
+  if(parse_res){
+    return parse_res > 0 ? 0 : -1;
   }
   printf("Listening on port %s, from all IP. Max text is 99 chars\n", get_args()->from.port);
   int const listenSocket = listen_socket_gen(get_args()->from.port);
