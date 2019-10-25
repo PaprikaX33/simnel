@@ -28,6 +28,13 @@ target_compile_features(${EXECUTABLE_NAME} PRIVATE
   c_static_assert
   c_variadic_macros
   c_function_prototypes)
+
+target_compile_definitions(${EXECUTABLE_NAME}
+  PRIVATE VER_MAJOR=${PROJECT_VERSION_MAJOR}
+  PRIVATE VER_MINOR=${PROJECT_VERSION_MINOR}
+  PRIVATE VER_PATCH=${PROJECT_VERSION_PATCH}
+  )
+
 target_compile_options(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:DEBUG>:
   -Werror
   -g
