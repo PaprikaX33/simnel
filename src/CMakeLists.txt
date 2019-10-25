@@ -1,5 +1,6 @@
 set(MAIN_SOURCE_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/main.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/parseArg.c
   ${CMAKE_CURRENT_SOURCE_DIR}/socket.c
   CACHE PATH "Main source files")
 
