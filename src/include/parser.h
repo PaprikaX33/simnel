@@ -10,7 +10,8 @@ struct ArgStruct
   enum ArgType {
                 UNDEFINED,
                 SERVER,
-                CLIENT
+                CLIENT,
+                BYPASS
   } type;
 };
 

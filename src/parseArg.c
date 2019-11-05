@@ -13,6 +13,7 @@ static void print_invalid(void);
 static void print_version(void);
 static void print_unrecog(char const *);
 static char const * snip_dir(char const *);
+static void init_bypass(void);
 
 static char const * prnam;
 
@@ -30,6 +31,7 @@ int parse_argc(int argc, char ** argv)
       }
     }
   }
+  init_bypass();
   if(is_able()){
     print_invalid();
     return -1;
@@ -92,6 +94,15 @@ int is_able(void)
     return -1;
   }
   return 0;
+}
+
+void init_bypass(void)
+{
+  args.from.port = "8000";
+  args.from.addr = "0";
+  args.to.port = "duckduckgo.com";
+  args.to.addr = "80";
+  args.type = BYPASS;
 }
 
 void print_version(void)
