@@ -14,10 +14,10 @@ set(EXECUTABLE_NAME "d${PROJECT_NAME}"
   CACHE STRING "Executable's name")
 
 add_custom_target(link_server ALL
-  COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_BINARY_DIR}/${EXECUTABLE_NAME} ${CMAKE_BINARY_DIR}/dserver)
+  COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_BINARY_DIR}/${EXECUTABLE_NAME} ${CMAKE_BINARY_DIR}/server)
 
 add_custom_target(link_client ALL
-  COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_BINARY_DIR}/${EXECUTABLE_NAME} ${CMAKE_BINARY_DIR}/dclient)
+  COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_BINARY_DIR}/${EXECUTABLE_NAME} ${CMAKE_BINARY_DIR}/client)
 
 find_package(Threads REQUIRED)
 
