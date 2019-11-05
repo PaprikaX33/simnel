@@ -1,5 +1,6 @@
 set(MAIN_SOURCE_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/main.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/parseArg.c
   ${CMAKE_CURRENT_SOURCE_DIR}/socket.c
   CACHE PATH "Main source files")
 
@@ -27,6 +28,13 @@ target_compile_features(${EXECUTABLE_NAME} PRIVATE
   c_static_assert
   c_variadic_macros
   c_function_prototypes)
+
+target_compile_definitions(${EXECUTABLE_NAME}
+  PRIVATE VER_MAJOR=${PROJECT_VERSION_MAJOR}
+  PRIVATE VER_MINOR=${PROJECT_VERSION_MINOR}
+  PRIVATE VER_PATCH=${PROJECT_VERSION_PATCH}
+  )
+
 target_compile_options(${EXECUTABLE_NAME} PRIVATE $<$<CONFIG:DEBUG>:
   -Werror
   -g

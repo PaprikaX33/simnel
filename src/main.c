@@ -9,18 +9,18 @@
 #include <errno.h>
 //END OPEN LISTENING SOCKET
 #include "socket.h"
+#include "parser.h"
 
 int main_loop(int const incFd);
 
-#define PORT "8000"
-
 int main(int argc, char**argv)
 {
-  for(int i = 0; i < argc; i++) {
-    printf("%d, %s\n", i, argv[i]);
+  int const parse_res = parse_argc(argc, argv);
+  if(parse_res){
+    return parse_res > 0 ? 0 : -1;
   }
-  printf("Listening on port %s, from all IP. Max text is 99 chars\n", PORT);
-  int const listenSocket = listen_socket_gen(PORT);
+  printf("Listening on port %s, from all IP. Max text is 99 chars\n", get_args()->from.port);
+  int const listenSocket = listen_socket_gen(get_args()->from.port);
   if(listenSocket < 0){
     perror("Error on socket generation\n");
     return -1;
