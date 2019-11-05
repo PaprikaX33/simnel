@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include "parser.h"
 
+#define COMPARE_FLAG(flg, shrt, lng) (!strncmp(flg, shrt, strlen(shrt)) || !strncmp(flg, lng, strlen(lng)))
+
 static void init_parse_arg(void);
 static int is_able(void);
 static int parse_flag(char const *);
@@ -37,11 +39,11 @@ int parse_argc(int argc, char ** argv)
 
 int parse_flag(char const * flg)
 {
-  if(!strncmp(flg, "-?", strlen("-?")) || !strncmp(flg, "--help", strlen("--help"))){
+  if(COMPARE_FLAG(flg, "-?", "--help")){
     print_help();
     return 1;
   }
-  if(!strncmp(flg, "-V", strlen("-V")) || !strncmp(flg, "--version", strlen("--version"))){
+  if(COMPARE_FLAG(flg, "-V", "--version")){
     print_version();
     return 1;
   }
