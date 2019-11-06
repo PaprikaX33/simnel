@@ -16,11 +16,12 @@ enum FlagParserState {
 static void init_parse_arg(void);
 static int is_able(void);
 static enum FlagParserState parse_flag(char const *);
+static enum FlagParserState priority_parse_flag(char const *);
 static void print_help(void);
 static void print_invalid(void);
 static void print_unrecog_arg(char const *);
 static void print_no_args(char const *);
-static void print_conflict(char const *, char const *);
+static void print_redefine(char const *, char const *);
 static int is_NUM(char const *);
 static void print_version(void);
 static void print_unrecog(char const *);
@@ -35,6 +36,15 @@ int parse_argc(int argc, char ** argv)
 {
   init_parse_arg();
   prnam = snip_dir(argv[0]);
+
+  for(int i = 1; i < argc; i++){
+    if(*(argv[i]) == '-'){
+      if(priority_parse_flag(argv[i]) == EXIT){
+        return 1;
+      }
+    }
+  }
+
   for(int i = 1; i < argc; i++) {
     if(*(argv[i]) == '-'){
       int const flg_res = parse_flag(argv[i]);
@@ -72,27 +82,8 @@ int parse_argc(int argc, char ** argv)
   return 0;
 }
 
-enum FlagParserState parse_flag(char const * flg)
+enum FlagParserState priority_parse_flag(char const * flg)
 {
-  if(COMPARE_FLAG(flg, "-P", "--version")){
-    return IPORT;
-  }
-  if(COMPARE_FLAG(flg,"-q", "--quiet")){
-    if(args.verb == VERBOSE) {
-      print_conflict(flg, "-v/--verbose");
-      return ERROR;
-    }
-    args.verb = QUIET;
-    return CONTINUE;
-  }
-  if(COMPARE_FLAG(flg,"-v", "--verbose")){
-    if(args.verb == QUIET) {
-      print_conflict(flg, "-q/--quiet");
-      return ERROR;
-    }
-    args.verb = VERBOSE;
-    return CONTINUE;
-  }
   if(COMPARE_FLAG(flg, "-?", "--help")){
     print_help();
     return EXIT;
@@ -100,6 +91,29 @@ enum FlagParserState parse_flag(char const * flg)
   if(COMPARE_FLAG(flg, "-V", "--version")){
     print_version();
     return EXIT;
+  }
+  return CONTINUE;
+}
+enum FlagParserState parse_flag(char const * flg)
+{
+  if(COMPARE_FLAG(flg, "-P", "--version")){
+    return IPORT;
+  }
+  if(COMPARE_FLAG(flg,"-q", "--quiet")){
+    if(args.verb != NORMAL) {
+      print_redefine(flg, "verbosity");
+      return ERROR;
+    }
+    args.verb = QUIET;
+    return CONTINUE;
+  }
+  if(COMPARE_FLAG(flg,"-v", "--verbose")){
+    if(args.verb != NORMAL) {
+      print_redefine(flg, "verbosity");
+      return ERROR;
+    }
+    args.verb = VERBOSE;
+    return CONTINUE;
   }
   print_unrecog(flg);
   return ERROR;
@@ -171,10 +185,10 @@ int is_NUM(char const * txt)
   return 1;
 }
 
-void print_conflict(char const * flag, char const * others)
+void print_redefine(char const * flag, char const * others)
 {
   fprintf(stderr,
-          "%s: Conflicting flag of\'%s\' with %s\n",
+          "%s: \'%s\' flag redefines %s\n",
           prnam, flag, others);
   fprintf(stderr,
           "%s: Try \'%s --help\' for more information\n",
@@ -231,4 +245,8 @@ void print_help(void)
   printf("  -v,\t--verbose\tRun in verbose mode, reports everything\n");
   printf("  -?,\t--help\t\tPrint this help text\n");
   printf("  -V,\t--version\tPrint the version information\n");
+  printf("\nSymlink this program to:\n");
+  printf("  simnel-server\tDecryptor endpoint\n");
+  printf("  simnel-client\tEncryptor endpoint\n");
+  printf("  simnel-bypass\tBypass the comunication without encryption (gateway mode)\n");
 }
