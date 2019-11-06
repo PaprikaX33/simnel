@@ -13,6 +13,11 @@ struct ArgStruct
                 CLIENT,
                 BYPASS
   } type;
+  enum VerboseType {
+                    NORMAL,
+                    QUIET,
+                    VERBOSE
+  } verb;
 };
 
 int parse_argc(int argc, char ** argv);
