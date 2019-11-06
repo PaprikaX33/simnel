@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include "parser.h"
 
+#define COMPARE_STRN(flg, str) (!strncmp(flg, str, strlen(str)))
 #define COMPARE_FLAG(flg, shrt, lng) (!strncmp(flg, shrt, strlen(shrt)) || !strncmp(flg, lng, strlen(lng)))
 
 enum FlagParserState {
@@ -17,6 +18,7 @@ static void init_parse_arg(void);
 static int is_able(void);
 static enum FlagParserState parse_flag(char const *);
 static enum FlagParserState priority_parse_flag(char const *);
+static int name_read(void);
 static void print_help(void);
 static void print_invalid(void);
 static void print_unrecog_arg(char const *);
@@ -36,7 +38,10 @@ int parse_argc(int argc, char ** argv)
 {
   init_parse_arg();
   prnam = snip_dir(argv[0]);
-
+  name_read();
+  /* if(name_read()){ */
+  /*   return -1; */
+  /* } */
   for(int i = 1; i < argc; i++){
     if(*(argv[i]) == '-'){
       if(priority_parse_flag(argv[i]) == EXIT){
@@ -169,7 +174,7 @@ void init_bypass(void)
   args.from.addr = "0";
   args.to.port = "duckduckgo.com";
   args.to.addr = "80";
-  args.type = BYPASS;
+  //args.type = BYPASS;
 }
 
 int is_NUM(char const * txt)
@@ -183,6 +188,23 @@ int is_NUM(char const * txt)
     }
   }
   return 1;
+}
+
+int name_read(void)
+{
+  if(COMPARE_STRN(prnam, "simnel-server")){
+    args.type = SERVER;
+    return 0;
+  }
+  if(COMPARE_STRN(prnam, "simnel-client")){
+    args.type = CLIENT;
+    return 0;
+  }
+  if(COMPARE_STRN(prnam, "simnel-bypass")){
+    args.type = BYPASS;
+    return 0;
+  }
+  return -1;
 }
 
 void print_redefine(char const * flag, char const * others)
