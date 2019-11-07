@@ -60,9 +60,11 @@ int send_socket_gen(char const * addr, char const * port)
   memset(&hints, 0, sizeof hints);
   hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
-
+  printf("Create opening to %s, %s\n", addr, port);
   if((status = getaddrinfo(addr, port, &hints, &res)) != 0) {
+    int const err = errno;
     fprintf(stderr, "getaddrinfo error: %s.\n", gai_strerror(status));
+    errno = err;
     return -1;
   }
   for(loop = res; loop != NULL; loop = loop->ai_next) {

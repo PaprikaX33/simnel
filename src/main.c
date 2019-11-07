@@ -20,6 +20,7 @@ int main(int argc, char**argv)
     return parse_res > 0 ? 0 : -1;
   }
   printf("Listening on port %s, from all IP. Max text is 99 chars\n", get_args()->from.port);
+  printf("Connection is pointed to %s on %s\n", get_args()->to.addr, get_args()->to.port);
   int const listenSocket = listen_socket_gen(get_args()->from.port);
   if(listenSocket < 0){
     perror("Error on socket generation\n");
@@ -61,7 +62,7 @@ int main_loop(int const incFd)
   }
 
   //OPENING THE OTHER END
-  int const targetFd = send_socket_gen("www.duckduckgo.com", "80");
+  int const targetFd = send_socket_gen(get_args()->to.addr, get_args()->to.port);
   if(targetFd < 0){
     perror("Error on creating connection");
     close(epollFd);
