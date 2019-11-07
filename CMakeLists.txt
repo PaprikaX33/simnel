@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(simnel VERSION 0.1.1 LANGUAGES C)
+project(simnel VERSION 0.1.2 LANGUAGES C)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE DEBUG)
