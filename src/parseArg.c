@@ -19,8 +19,10 @@ static int is_able(void);
 static enum FlagParserState parse_flag(char const *);
 static enum FlagParserState priority_parse_flag(char const *);
 static int name_read(void);
+static int addr_port_parse(char *);
 static void print_help(void);
 static void print_invalid(void);
+static void print_addr_err(void);
 static void print_unrecog_arg(char const *);
 static void print_no_args(char const *);
 static void print_redefine(char const *, char const *);
@@ -28,7 +30,6 @@ static int is_NUM(char const *);
 static void print_version(void);
 static void print_unrecog(char const *);
 static char const * snip_dir(char const *);
-static void init_bypass(void);
 
 static char const * prnam;
 
@@ -39,9 +40,6 @@ int parse_argc(int argc, char ** argv)
   init_parse_arg();
   prnam = snip_dir(argv[0]);
   name_read();
-  /* if(name_read()){ */
-  /*   return -1; */
-  /* } */
   for(int i = 1; i < argc; i++){
     if(*(argv[i]) == '-'){
       if(priority_parse_flag(argv[i]) == EXIT){
@@ -51,7 +49,7 @@ int parse_argc(int argc, char ** argv)
   }
 
   for(int i = 1; i < argc; i++) {
-    if(*(argv[i]) == '-'){
+    if(*(argv[i]) == '-') { //is flag
       int const flg_res = parse_flag(argv[i]);
       switch(flg_res) {
       case ERROR:
@@ -78,11 +76,36 @@ int parse_argc(int argc, char ** argv)
         break;
       }
     }
+    else { //not a flag
+      if(addr_port_parse(argv[i])){
+        print_addr_err();
+        return -1;
+      }
+    }
   }
-  init_bypass();
   if(is_able()){
     print_invalid();
     return -1;
+  }
+  return 0;
+}
+
+int addr_port_parse(char * flg)
+{
+  if(args.to.addr != NULL) {
+    return -1;
+  }
+  args.to.addr = flg;
+  char * separ = NULL;
+  while(*flg != '\0'){
+    if(*flg == ':'){
+      separ = flg;
+    }
+    flg++;
+  }
+  if(separ != NULL){
+    *separ = '\0';
+    args.to.port = ++separ;
   }
   return 0;
 }
@@ -156,9 +179,6 @@ int is_able(void)
   if(args.type == UNDEFINED){
     return -1;
   }
-  if(!args.from.addr){
-    return -1;
-  }
   if(!args.to.addr){
     return -1;
   }
@@ -166,15 +186,6 @@ int is_able(void)
     return -1;
   }
   return 0;
-}
-
-void init_bypass(void)
-{
-  //args.from.port = "8000";
-  args.from.addr = "0";
-  args.to.port = "duckduckgo.com";
-  args.to.addr = "80";
-  //args.type = BYPASS;
 }
 
 int is_NUM(char const * txt)
@@ -257,6 +268,15 @@ void print_unrecog_arg(char const * arg)
           prnam, arg, prnam, prnam);
 }
 
+void print_addr_err(void)
+{
+  fprintf(stderr, "%s: Reassignment of address\n",
+          prnam);
+  fprintf(stderr,
+          "%s: Try \'%s --help\' for more information\n",
+          prnam, prnam);
+}
+
 void print_help(void)
 {
   printf("Usage: %s [OPTION] <ADDR>:<PORT>\n", prnam);
@@ -272,3 +292,5 @@ void print_help(void)
   printf("  simnel-client\tEncryptor endpoint\n");
   printf("  simnel-bypass\tBypass the comunication without encryption (gateway mode)\n");
 }
+
+//void clean_args(void);
